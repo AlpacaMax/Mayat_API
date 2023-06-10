@@ -1,8 +1,13 @@
+import os
+import uuid
+import git
+import mayat
 from fastapi import FastAPI, UploadFile
 from .schemas import *
 
-app = FastAPI()
+SCRATCH_DIR = "scratch"
 
+app = FastAPI()
 
 @app.get("/")
 async def root():
