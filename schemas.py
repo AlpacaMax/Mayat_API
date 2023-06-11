@@ -1,5 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
-class GithubRepoLinksPydantic(BaseModel):
-    links: list[str]
+class GitRepoLinksPydantic(BaseModel):
+    urls: list[str]
+    language: str
+    function_name: str = "*"
+    threshold: int = 5
