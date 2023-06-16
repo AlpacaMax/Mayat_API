@@ -1,13 +1,11 @@
 import os
-import uuid
 import git
 import mayat
+import pika
 from fastapi import FastAPI, UploadFile
 
 from schemas import *
 from utils import *
-
-SCRATCH_DIR = "scratch"
 
 app = FastAPI()
 
@@ -17,12 +15,21 @@ async def root():
 
 @app.post("/check_git_repos")
 async def check_git_repos(repo_links: GitRepoLinksPydantic):
-    repos_root_dir = gen_repos_root_dirname()
-    for url in repo_links.urls:
-        git.Repo.clone_from(
-            url,
-            os.path.join(SCRATCH_DIR, repos_root_dir, gen_repo_dirname(url))
-        )
+    repo_links_json = repo_links.json();
+
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+
+    channel.queue_declare(queue='mayat')
+
+    channel.basic_publish(
+        exchange='',
+        routing_key='mayat',
+        body=repo_links_json
+    )
+
+    connection.close()
 
     return {"id": 1}
 
