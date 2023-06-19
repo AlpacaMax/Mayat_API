@@ -1,4 +1,4 @@
-import pika, sys, os, json, git, time
+import pika, sys, os, json, git, time, shutil
 from mayat.frontends import TS_C
 from mayat.Result import print_result
 from utils import *
@@ -38,6 +38,8 @@ def callback(ch, method, properties, body):
         format="JSON",
         list_all=False
     )
+
+    shutil.rmtree(os.path.join(SCRATCH_DIR, repos_root_dir))
 
 def main():
     connection = pika.BlockingConnection(

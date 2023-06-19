@@ -1,21 +1,33 @@
-import os
-import git
-import mayat
 import pika
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, Depends
+from sqlalchemy.orm import Session
 
-from schemas import *
-from utils import *
+from database import engine
+import models
+import schemas
+import utils
 
+
+models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
+
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 @app.post("/check_git_repos")
-async def check_git_repos(repo_links: GitRepoLinksPydantic):
-    repo_links_json = repo_links.json();
+async def check_git_repos(
+    repo_links: schemas.GitRepoLinksPydantic,
+    db: Session = Depends(utils.get_db),
+):
+    new_task = models.Task()
+    db.add(new_task)
+    db.commit()
+    db.refresh(new_task)
+
+    repo_links.result_id = new_task.id
+    repo_links_json = repo_links.json()
 
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host='localhost'))
@@ -31,7 +43,7 @@ async def check_git_repos(repo_links: GitRepoLinksPydantic):
 
     connection.close()
 
-    return {"id": 1}
+    return new_task
 
 @app.post("/check_zip_file")
 async def check_zip_file(zip_file: UploadFile):

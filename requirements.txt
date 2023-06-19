@@ -3,3 +3,4 @@ pydantic
 mayat
 GitPython
 pika
+sqlalchemy

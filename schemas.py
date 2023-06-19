@@ -7,3 +7,4 @@ class GitRepoLinksPydantic(BaseModel):
     language: str
     function_name: str = "*"
     threshold: int = 5
+    result_id: int = 0
