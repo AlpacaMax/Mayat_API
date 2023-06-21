@@ -26,7 +26,7 @@ async def check_git_repos(
     db.commit()
     db.refresh(new_task)
 
-    repo_links.result_id = new_task.id
+    repo_links.task_id = new_task.id
     repo_links_json = repo_links.json()
 
     connection = pika.BlockingConnection(
@@ -49,6 +49,6 @@ async def check_git_repos(
 async def check_zip_file(zip_file: UploadFile):
     return {"message": "Hello World"}
 
-@app.get("/get_result/{result_id}")
-async def get_result(result_id: int):
-    return {"message": "Hello World"}
+@app.get("/task/{task_id}")
+async def get_result(task_id: int, db: Session = Depends(utils.get_db)):
+    return db.get(models.Task, task_id)

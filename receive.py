@@ -1,6 +1,10 @@
 import pika, sys, os, json, git, time, shutil
+from sqlalchemy import update
 from mayat.frontends import TS_C
-from mayat.Result import print_result
+from mayat.Result import serialize_result
+
+import models
+from database import SessionLocal
 from utils import *
 
 SCRATCH_DIR = "scratch"
@@ -26,20 +30,32 @@ def callback(ch, method, properties, body):
             env={"GIT_TRACE": "1", "GIT_CURL_VERBOSE": "1"},
             multi_options=["--verbose"],
         )
+    print()
 
     result = TS_C.main(
         source_filenames=repos_paths,
         function_name=repo_links["function_name"],
         threshold=repo_links["threshold"]
     )
-
-    print_result(
+    serialized_result = serialize_result(
         result,
         format="JSON",
         list_all=False
     )
-
     shutil.rmtree(os.path.join(SCRATCH_DIR, repos_root_dir))
+
+    session = SessionLocal()
+    stmt = (
+        update(models.Task)
+        .where(models.Task.id == repo_links["task_id"])
+        .values(
+            result = serialized_result,
+            status = models.TaskStatus.Finished
+        )
+    )
+    session.execute(stmt)
+    session.commit()
+    session.close()
 
 def main():
     connection = pika.BlockingConnection(
