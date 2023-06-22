@@ -1,6 +1,6 @@
 import pika, sys, os, json, git, time, shutil
 from sqlalchemy import update
-from mayat.frontends import TS_C
+from mayat.frontends import TS_C, TS_Java, TS_Python
 from mayat.Result import serialize_result
 
 import models
@@ -8,9 +8,30 @@ from database import SessionLocal
 from utils import *
 
 SCRATCH_DIR = "scratch"
+language_mapper = {
+    "C": TS_C,
+    "Java": TS_Java,
+    "Python": TS_Python,
+}
 
 def callback(ch, method, properties, body):
     repo_links = json.loads(body)
+
+    if repo_links["language"] not in language_mapper:
+        session = SessionLocal()
+        stmt = (
+            update(models.Task)
+            .where(models.Task.id == repo_links["task_id"])
+            .values(
+                message = f"Unsupported Language! We currently support {', '.join(language_mapper.keys())}.",
+                status = models.TaskStatus.Error,
+            )
+        )
+        session.execute(stmt)
+        session.commit()
+        session.close()
+        
+        return
 
     repos_root_dir = gen_repos_root_dirname()
     repos_paths = []
@@ -32,7 +53,7 @@ def callback(ch, method, properties, body):
         )
     print()
 
-    result = TS_C.main(
+    result = language_mapper[repo_links["language"]].main(
         source_filenames=repos_paths,
         function_name=repo_links["function_name"],
         threshold=repo_links["threshold"]
