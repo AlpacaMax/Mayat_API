@@ -4,3 +4,5 @@ mayat
 GitPython
 pika
 sqlalchemy
+python-multipart
+aiofiles
