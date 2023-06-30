@@ -1,12 +1,6 @@
-import os
-import uuid
-import git
+from zipfile import ZipFile
 
 SCRATCH_DIR = "scratch"
 
-repo_url = "git@github.com:os3224/homework-5-filesystem-4f727de3-srg537.git"
-
-cloned_repo = git.Repo.clone_from(
-    repo_url,
-    os.path.join(SCRATCH_DIR, f"github_repos_{uuid.uuid4()}/{repo_url.split('/')[1].split('.')[0]}")
-)
+with ZipFile("scratch/zip_file_f91ef4b7-a2ee-4422-84e2-be18e6e8b41f.zip", 'r') as f:
+    f.extractall("scratch/zip_file_f91ef4b7-a2ee-4422-84e2-be18e6e8b41f")

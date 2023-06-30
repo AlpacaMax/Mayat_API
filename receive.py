@@ -14,6 +14,27 @@ language_mapper = {
     "Python": TS_Python,
 }
 
+def clone_github_repos(repo_links):
+    repos_root_dir = gen_repos_root_dirname()
+    repos_paths = []
+    for url in repo_links["urls"]:
+        print(url)
+        path = os.path.join(
+            SCRATCH_DIR,
+            repos_root_dir,
+            gen_repo_dirname(url)
+        )
+
+        repos_paths.append(os.path.join(path, repo_links["file"]))
+
+        git.Repo.clone_from(url, path)
+    print()
+
+    return (repos_root_dir, repos_paths)
+
+def unzip_file(repo_links):
+    pass
+
 def callback(ch, method, properties, body):
     repo_links = json.loads(body)
 
@@ -33,25 +54,10 @@ def callback(ch, method, properties, body):
         
         return
 
-    repos_root_dir = gen_repos_root_dirname()
-    repos_paths = []
-    for url in repo_links["urls"]:
-        print(url)
-        path = os.path.join(
-            SCRATCH_DIR,
-            repos_root_dir,
-            gen_repo_dirname(url)
-        )
-
-        repos_paths.append(os.path.join(path, repo_links["file"]))
-
-        git.Repo.clone_from(
-            url,
-            path,
-            env={"GIT_TRACE": "1", "GIT_CURL_VERBOSE": "1"},
-            multi_options=["--verbose"],
-        )
-    print()
+    if "urls" in repo_links:
+        repos_root_dir, repos_paths = clone_github_repos(repo_links)
+    else:
+        repos_root_dir, repos_paths = unzip_file(repo_links)
 
     result = language_mapper[repo_links["language"]].main(
         source_filenames=repos_paths,

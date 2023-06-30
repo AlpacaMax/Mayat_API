@@ -77,19 +77,19 @@ async def check_zip_file(
         "task_id": new_task.id,
     }
 
-    # connection = pika.BlockingConnection(
-    #     pika.ConnectionParameters(host='localhost'))
-    # channel = connection.channel()
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
 
-    # channel.queue_declare(queue='mayat')
+    channel.queue_declare(queue='mayat')
 
-    # channel.basic_publish(
-    #     exchange='',
-    #     routing_key='mayat_zip',
-    #     body=request_data
-    # )
+    channel.basic_publish(
+        exchange='',
+        routing_key='mayat_zip',
+        body=request_data
+    )
 
-    # connection.close()
+    connection.close()
 
     return new_task
 
