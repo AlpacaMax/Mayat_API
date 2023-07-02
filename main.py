@@ -1,5 +1,6 @@
 import os
 import pika
+import json
 import aiofiles
 from fastapi import Form, File, FastAPI, UploadFile, Depends
 from sqlalchemy.orm import Session
@@ -85,8 +86,8 @@ async def check_zip_file(
 
     channel.basic_publish(
         exchange='',
-        routing_key='mayat_zip',
-        body=request_data
+        routing_key='mayat',
+        body=json.dumps(request_data)
     )
 
     connection.close()
