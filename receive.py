@@ -1,4 +1,4 @@
-import pika, sys, os, json, git, time, shutil
+import pika, sys, os, json, git, shutil
 from zipfile import ZipFile
 from sqlalchemy import update
 from mayat.frontends import TS_C, TS_Java, TS_Python
@@ -36,7 +36,9 @@ def clone_github_repos(repo_links):
 def unzip_file(repo_links):
     repos_root_dir = repo_links["zip_filename"].split('.')[0]
     print(f"Unzipping {repo_links['zip_filename']}\n")
-    with ZipFile(os.path.join(SCRATCH_DIR, repo_links["zip_filename"])) as f:
+
+    zip_file_path = os.path.join(SCRATCH_DIR, repo_links["zip_filename"])
+    with ZipFile(zip_file_path) as f:
         f.extractall(os.path.join(SCRATCH_DIR, repos_root_dir))
 
     repos_paths = []
@@ -49,7 +51,8 @@ def unzip_file(repo_links):
                 repo_links["file"]
             )
         )
-    
+
+    os.remove(zip_file_path)
     return (repos_root_dir, repos_paths)
 
 def callback(ch, method, properties, body):
